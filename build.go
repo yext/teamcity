@@ -7,7 +7,7 @@ type Builds struct {
 
 // Build is an instance of a stage in the build chain for a given project
 type Build struct {
-	Id          int64       `json:"id"`
+	Id          int         `json:"id"`
 	Number      string      `json:"number"`
 	BuildTypeId string      `json:"buildTypeId"`
 	BuildType   BuildType   `json:"buildType"`
@@ -33,7 +33,7 @@ type LastChanges struct {
 
 // Change is an individual change in a group that corresponds to a certain build
 type Change struct {
-	Id       int64  `json:"id"`
+	Id       int    `json:"id"`
 	Version  string `json:"version"`
 	Username string `json:"username"`
 }
