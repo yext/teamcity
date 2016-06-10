@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	basePathSuffix = "/httpAuth/app/rest/"
-	projectsPath   = "projects"
+	basePathSuffix  = "/httpAuth/app/rest/"
+	projectsPath    = "projects"
+	buildsPath      = "builds"
+	locatorParamKey = "?locator="
 )
 
 // Client is an http client and authorization details used to make http requests to TeamCity's API
@@ -40,12 +42,34 @@ func (c *Client) ListProjects() (*Projects, error) {
 	return v, nil
 }
 
-// ProjectByName gets the project with specified selector
+// SelectProject gets the project with specified selector
 // See https://confluence.jetbrains.com/display/TCD9/REST+API#RESTAPI-ProjectsandBuildConfiguration/TemplatesLists
 // for more information about constructing selector.
 func (c *Client) SelectProject(selector string) (*Project, error) {
 	v := &Project{}
 	if err := c.doRequest("GET", path.Join(projectsPath, selector), v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// SelectBuilds gets the build with the specified buildLocator.
+// See https://confluence.jetbrains.com/display/TCD9/REST+API#RESTAPI-BuildLocator
+// for more information about constructing buildLocator string.
+func (c *Client) SelectBuilds(selector string) (*Builds, error) {
+	v := &Builds{}
+	path := buildsPath + locatorParamKey + selector
+	if err := c.doRequest("GET", path, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// BuildFromId gets the build details for the build with specified id
+func (c *Client) BuildFromID(id int) (*Build, error) {
+	v := &Build{}
+	idSelector := fmt.Sprintf("id:%v", id)
+	if err := c.doRequest("GET", path.Join(buildsPath, idSelector), v); err != nil {
 		return nil, err
 	}
 	return v, nil
