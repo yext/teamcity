@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+
+	"github.com/yext/teamcity/locate"
 )
 
 const (
@@ -68,8 +70,7 @@ func (c *Client) SelectBuilds(selector string) (*Builds, error) {
 // BuildFromId gets the build details for the build with specified id
 func (c *Client) BuildFromID(id int) (*Build, error) {
 	v := &Build{}
-	idSelector := fmt.Sprintf("id:%v", id)
-	if err := c.doRequest("GET", path.Join(buildsPath, idSelector), v); err != nil {
+	if err := c.doRequest("GET", path.Join(buildsPath, locate.ById(id).String()), v); err != nil {
 		return nil, err
 	}
 	return v, nil
