@@ -1,9 +1,5 @@
 package teamcity
 
-import (
-	"errors"
-)
-
 // Project is an individual project configured in TeamCity
 type Project struct {
 	Name   string `json:"name"`
@@ -29,11 +25,11 @@ type Property struct {
 }
 
 // getProperty returns the Property of the given project with the given target name if it exists
-func GetProjectProperty(project *Project, target string) (*Property, error) {
+func (project Project) PropertyFromName(target string) Property {
 	for _, property := range project.Params.Properties {
 		if property.Name == target {
-			return &property, nil
+			return property
 		}
 	}
-	return &Property{}, errors.New("Property not found")
+	return Property{}
 }
