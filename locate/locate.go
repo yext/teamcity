@@ -1,9 +1,6 @@
 package locate
 
-import (
-	"fmt"
-	"strconv"
-)
+import "fmt"
 
 // Locator is a key, value used to locate various TeamCity entities
 type Locator struct {
@@ -17,8 +14,8 @@ func (l Locator) String() string {
 }
 
 // ById gets the Locator for locating by id
-func ById(id int) Locator {
-	return Locator{"id", strconv.Itoa(id)}
+func ById(id string) Locator {
+	return Locator{"id", id}
 }
 
 // ByName gets the Locator for locating by name
