@@ -1,9 +1,11 @@
 package teamcity
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"path"
 
@@ -14,6 +16,7 @@ const (
 	basePathSuffix  = "/httpAuth/app/rest/"
 	projectsPath    = "projects"
 	buildsPath      = "builds"
+	parametersPath  = "parameters"
 	locatorParamKey = "?locator="
 )
 
@@ -38,7 +41,7 @@ func NewClient(host, username, password string) *Client {
 // ListProjects gets a list of all projects
 func (c *Client) ListProjects() (*Projects, error) {
 	v := &Projects{}
-	if err := c.doRequest("GET", projectsPath, v); err != nil {
+	if err := c.doRequest("GET", projectsPath, nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -49,7 +52,7 @@ func (c *Client) ListProjects() (*Projects, error) {
 // for more information about constructing selector.
 func (c *Client) SelectProject(selector string) (*Project, error) {
 	v := &Project{}
-	if err := c.doRequest("GET", path.Join(projectsPath, selector), v); err != nil {
+	if err := c.doRequest("GET", path.Join(projectsPath, selector), nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -61,7 +64,7 @@ func (c *Client) SelectProject(selector string) (*Project, error) {
 func (c *Client) SelectBuilds(selector string) (*Builds, error) {
 	v := &Builds{}
 	path := buildsPath + locatorParamKey + selector
-	if err := c.doRequest("GET", path, v); err != nil {
+	if err := c.doRequest("GET", path, nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -70,15 +73,33 @@ func (c *Client) SelectBuilds(selector string) (*Builds, error) {
 // BuildFromId gets the build details for the build with specified id
 func (c *Client) BuildFromID(id int) (*Build, error) {
 	v := &Build{}
-	if err := c.doRequest("GET", path.Join(buildsPath, locate.ById(id).String()), v); err != nil {
+	if err := c.doRequest("GET", path.Join(buildsPath, locate.ById(id).String()), nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
 }
 
-func (c *Client) doRequest(method string, path string, v interface{}) error {
+// UpdateParameter updates the parameter provided for the specified project name
+func (c *Client) UpdateParameter(projectName string, property *Property) (*Property, error) {
+	p := path.Join(projectsPath, locate.ByName(projectName).String(), parametersPath, property.Name)
+	v := &Property{}
+	body, err := json.Marshal(property)
+	if err != nil {
+		return nil, err
+	}
+	if err := c.doRequest("PUT", p, body, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func (c *Client) doRequest(method string, path string, data []byte, v interface{}) error {
 	url := c.host + basePathSuffix + path
-	req, err := http.NewRequest(method, url, nil)
+	var body io.Reader
+	if data != nil {
+		body = bytes.NewBuffer(data)
+	}
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return err
 	}
@@ -86,6 +107,7 @@ func (c *Client) doRequest(method string, path string, v interface{}) error {
 	rawAuth := []byte(fmt.Sprintf("%v:%v", c.username, c.password))
 	req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString(rawAuth))
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
