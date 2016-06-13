@@ -16,23 +16,24 @@ type Builds struct {
 
 // Build is an instance of a stage in the build chain for a given project
 type Build struct {
-	Id          int         `json:"id"`
-	Number      string      `json:"number"`
-	BuildTypeId string      `json:"buildTypeId"`
-	BuildType   BuildType   `json:"buildType"`
-	Status      string      `json:"status"`
-	State       string      `json:"state"`
-	Href        string      `json:"href"`
-	StatusText  string      `json:"statusText"`
-	QueuedDate  Time        `json:"queuedDate"`
-	StartDate   Time        `json:"startDate"`
-	FinishDate  Time        `json:"finishDate"`
-	LastChanges LastChanges `json:"lastChanges"`
+	Id          int         `json:"id,omitempty"`
+	Number      string      `json:"number,omitempty"`
+	BuildTypeId string      `json:"buildTypeId,omitempty"`
+	BuildType   BuildType   `json:"buildType,omitempty"`
+	Status      string      `json:"status,omitempty"`
+	State       string      `json:"state,omitempty"`
+	Href        string      `json:"href,omitempty"`
+	StatusText  string      `json:"statusText,omitempty"`
+	QueuedDate  Time        `json:"queuedDate,omitempty"`
+	StartDate   Time        `json:"startDate,omitempty"`
+	FinishDate  Time        `json:"finishDate,omitempty"`
+	LastChanges LastChanges `json:"lastChanges,omitempty"`
 }
 
 // BuildType is a type of Build
 type BuildType struct {
-	Name string `json:"name"`
+	Id   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // LastChanges are the list of changes that corresponds to a certain build

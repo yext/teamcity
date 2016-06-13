@@ -17,6 +17,8 @@ const (
 	basePathSuffix  = "/httpAuth/app/rest/"
 	projectsPath    = "projects"
 	buildsPath      = "builds"
+	buildTypesPath  = "buildTypes"
+	buildQueuePath  = "buildQueue"
 	parametersPath  = "parameters"
 	locatorParamKey = "?locator="
 )
@@ -75,6 +77,33 @@ func (c *Client) SelectBuilds(selector string) (*Builds, error) {
 func (c *Client) BuildFromID(id int) (*Build, error) {
 	v := &Build{}
 	if err := c.doRequest("GET", path.Join(buildsPath, locate.ById(strconv.Itoa(id)).String()), nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// SelectBuildType gets the build configuration with the specified selector
+func (c *Client) SelectBuildType(selector string) (*BuildType, error) {
+	v := &BuildType{}
+	if err := c.doRequest("GET", path.Join(buildTypesPath, selector), nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// TriggerBuild runs a build for the given build configuration in TeamCity
+func (c *Client) TriggerBuild(buildTypeId string) (*Build, error) {
+	v := &Build{}
+	build := &Build{
+		BuildType: BuildType{
+			Id: buildTypeId,
+		},
+	}
+	body, err := json.Marshal(build)
+	if err != nil {
+		return nil, err
+	}
+	if err := c.doRequest("POST", buildQueuePath, body, v); err != nil {
 		return nil, err
 	}
 	return v, nil
