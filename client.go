@@ -94,6 +94,19 @@ func (c *Client) UpdateParameter(projectName string, property *Property) (*Prope
 	return v, nil
 }
 
+// CreateProject creates a new project
+func (c *Client) CreateProject(project *Project) (*Project, error) {
+	v := &Project{}
+	body, err := json.Marshal(project)
+	if err != nil {
+		return nil, err
+	}
+	if err := c.doRequest("POST", projectsPath, body, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
 func (c *Client) doRequest(method string, path string, data []byte, v interface{}) error {
 	url := c.host + basePathSuffix + path
 	var body io.Reader
