@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"path"
+	"sort"
 	"strconv"
 
 	"github.com/yext/teamcity/locate"
@@ -82,6 +83,26 @@ func (c *Client) BuildFromID(id int) (*Build, error) {
 	return v, nil
 }
 
+// Compiles a list of the changes characterizing each of the given builds, with no repeats, sorted by Date
+func (client *Client) SelectChangesFromBuilds(builds *Builds) ([]Change, error) {
+	changesMap := map[string]Change{}
+	for _, build := range builds.Builds {
+		detailedBuild, err := client.BuildFromID(build.Id)
+		if err != nil {
+			return nil, err
+		}
+		for _, change := range detailedBuild.LastChanges.Changes {
+			changesMap[change.Version] = change
+		}
+	}
+	var changesList ChangesByDate
+	for _, change := range changesMap {
+		changesList = append(changesList, change)
+	}
+	sort.Sort(sort.Reverse(changesList))
+	return changesList, nil
+}
+
 // SelectBuildType gets the build configuration with the specified selector
 func (c *Client) SelectBuildType(selector string) (*BuildType, error) {
 	v := &BuildType{}
@@ -91,13 +112,34 @@ func (c *Client) SelectBuildType(selector string) (*BuildType, error) {
 	return v, nil
 }
 
+// SelectBuildTypeBuilds gets the builds belonging to the build configuration with the specified selector
+func (c *Client) SelectBuildTypeBuilds(selector string) (*Builds, error) {
+	v := &Builds{}
+	if err := c.doRequest("GET", path.Join(buildTypesPath, selector, buildsPath), nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
 // TriggerBuild runs a build for the given build configuration in TeamCity
-func (c *Client) TriggerBuild(buildTypeId string) (*Build, error) {
+func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription string) (*Build, error) {
 	v := &Build{}
 	build := &Build{
 		BuildType: BuildType{
 			Id: buildTypeId,
 		},
+	}
+	if changeId > 0 {
+		build.LastChanges = LastChanges{
+			Changes: []Change{
+				Change{Id: changeId},
+			},
+		}
+	}
+	if len(pushDescription) > 0 {
+		build.Comment = Comment{
+			Text: pushDescription,
+		}
 	}
 	body, err := json.Marshal(build)
 	if err != nil {

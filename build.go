@@ -28,12 +28,18 @@ type Build struct {
 	StartDate   Time        `json:"startDate,omitempty"`
 	FinishDate  Time        `json:"finishDate,omitempty"`
 	LastChanges LastChanges `json:"lastChanges,omitempty"`
+	Comment     Comment     `json:"comment,omitempty"`
 }
 
 // BuildType is a type of Build
 type BuildType struct {
 	Id   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+// Comment is a description for a Build instance
+type Comment struct {
+	Text string `json:"text"`
 }
 
 // LastChanges are the list of changes that corresponds to a certain build
@@ -43,9 +49,22 @@ type LastChanges struct {
 
 // Change is an individual change in a group that corresponds to a certain build
 type Change struct {
-	Id       int    `json:"id"`
-	Version  string `json:"version"`
-	Username string `json:"username"`
+	Id       int    `json:"id,omitempty"`
+	Version  string `json:"version,omitempty"`
+	Username string `json:"username,omitempty"`
+	Date     Time   `json:"date,omitempty"`
+}
+
+// ChangesByDate is an interface for sorting an array of Changes by Date
+type ChangesByDate []Change
+
+// Functions for using Golang "sort" package
+func (c ChangesByDate) Len() int      { return len(c) }
+func (c ChangesByDate) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
+func (c ChangesByDate) Less(i, j int) bool {
+	timeA := time.Time(c[i].Date)
+	timeB := time.Time(c[j].Date)
+	return timeA.Before(timeB)
 }
 
 // Time is the date in the format TeamCity provides
