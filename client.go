@@ -128,6 +128,14 @@ func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription 
 		BuildType: BuildType{
 			Id: buildTypeId,
 		},
+		Properties: Params{
+			Properties: []Property{
+				Property{
+					Name:  "env.PUSH_DESCRIPTION",
+					Value: pushDescription,
+				},
+			},
+		},
 	}
 	if changeId > 0 {
 		build.LastChanges = LastChanges{

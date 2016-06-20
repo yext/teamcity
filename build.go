@@ -29,6 +29,7 @@ type Build struct {
 	FinishDate  Time        `json:"finishDate,omitempty"`
 	LastChanges LastChanges `json:"lastChanges,omitempty"`
 	Comment     Comment     `json:"comment,omitempty"`
+	Properties  Params      `json:"properties,omitempty"`
 }
 
 // BuildType is a type of Build
