@@ -15,13 +15,23 @@ import (
 )
 
 const (
-	basePathSuffix  = "/httpAuth/app/rest/"
-	projectsPath    = "projects"
-	buildsPath      = "builds"
-	buildTypesPath  = "buildTypes"
-	buildQueuePath  = "buildQueue"
-	parametersPath  = "parameters"
+	basePathSuffix         = "/httpAuth/app/rest/"
+	projectsPath           = "projects"
+	buildsPath             = "builds"
+	buildTypesPath         = "buildTypes"
+	buildQueuePath         = "buildQueue"
+	parametersPath         = "parameters"
+	templatePath           = "template"
+	artifactDependencyPath = "artifact-dependencies"
+	snapshotDependencyPath = "snapshot-dependencies"
+
 	locatorParamKey = "?locator="
+
+	artifactDependencyType = "artifact_dependency"
+	snapshotDependencyType = "snapshot_dependency"
+
+	jsonContentType = "application/json"
+	textContentType = "text/plain"
 )
 
 // Client is an http client and authorization details used to make http requests to TeamCity's API
@@ -45,7 +55,7 @@ func NewClient(host, username, password string) *Client {
 // ListProjects gets a list of all projects
 func (c *Client) ListProjects() (*Projects, error) {
 	v := &Projects{}
-	if err := c.doRequest("GET", projectsPath, nil, v); err != nil {
+	if err := c.doRequest("GET", projectsPath, "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -56,7 +66,7 @@ func (c *Client) ListProjects() (*Projects, error) {
 // for more information about constructing selector.
 func (c *Client) SelectProject(selector string) (*Project, error) {
 	v := &Project{}
-	if err := c.doRequest("GET", path.Join(projectsPath, selector), nil, v); err != nil {
+	if err := c.doRequest("GET", path.Join(projectsPath, selector), "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -68,7 +78,7 @@ func (c *Client) SelectProject(selector string) (*Project, error) {
 func (c *Client) SelectBuilds(selector string) (*Builds, error) {
 	v := &Builds{}
 	path := buildsPath + locatorParamKey + selector
-	if err := c.doRequest("GET", path, nil, v); err != nil {
+	if err := c.doRequest("GET", path, "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -77,7 +87,7 @@ func (c *Client) SelectBuilds(selector string) (*Builds, error) {
 // BuildFromId gets the build details for the build with specified id
 func (c *Client) BuildFromID(id int) (*Build, error) {
 	v := &Build{}
-	if err := c.doRequest("GET", path.Join(buildsPath, locate.ById(strconv.Itoa(id)).String()), nil, v); err != nil {
+	if err := c.doRequest("GET", path.Join(buildsPath, locate.ById(strconv.Itoa(id)).String()), "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -106,7 +116,7 @@ func (client *Client) SelectChangesFromBuilds(builds *Builds) ([]Change, error) 
 // SelectBuildType gets the build configuration with the specified selector
 func (c *Client) SelectBuildType(selector string) (*BuildType, error) {
 	v := &BuildType{}
-	if err := c.doRequest("GET", path.Join(buildTypesPath, selector), nil, v); err != nil {
+	if err := c.doRequest("GET", path.Join(buildTypesPath, selector), "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -115,7 +125,7 @@ func (c *Client) SelectBuildType(selector string) (*BuildType, error) {
 // SelectBuildTypeBuilds gets the builds belonging to the build configuration with the specified selector
 func (c *Client) SelectBuildTypeBuilds(selector string) (*Builds, error) {
 	v := &Builds{}
-	if err := c.doRequest("GET", path.Join(buildTypesPath, selector, buildsPath), nil, v); err != nil {
+	if err := c.doRequest("GET", path.Join(buildTypesPath, selector, buildsPath), "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -149,11 +159,8 @@ func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription 
 			Text: pushDescription,
 		}
 	}
-	body, err := json.Marshal(build)
-	if err != nil {
-		return nil, err
-	}
-	if err := c.doRequest("POST", buildQueuePath, body, v); err != nil {
+
+	if err := c.doJSONRequest("POST", buildQueuePath, build, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -163,11 +170,17 @@ func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription 
 func (c *Client) UpdateParameter(projectName string, property *Property) (*Property, error) {
 	p := path.Join(projectsPath, locate.ByName(projectName).String(), parametersPath, property.Name)
 	v := &Property{}
-	body, err := json.Marshal(property)
-	if err != nil {
+	if err := c.doJSONRequest("PUT", p, property, v); err != nil {
 		return nil, err
 	}
-	if err := c.doRequest("PUT", p, body, v); err != nil {
+	return v, nil
+}
+
+// UpdateBuildTypeParameter updates the parameter provided for the specified build type
+func (c *Client) UpdateBuildTypeParameter(buildTypeLocator string, property *Property) (*Property, error) {
+	p := path.Join(buildTypesPath, buildTypeLocator, parametersPath, property.Name)
+	v := &Property{}
+	if err := c.doJSONRequest("PUT", p, property, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -176,17 +189,86 @@ func (c *Client) UpdateParameter(projectName string, property *Property) (*Prope
 // CreateProject creates a new project
 func (c *Client) CreateProject(project *Project) (*Project, error) {
 	v := &Project{}
-	body, err := json.Marshal(project)
-	if err != nil {
-		return nil, err
-	}
-	if err := c.doRequest("POST", projectsPath, body, v); err != nil {
+	if err := c.doJSONRequest("POST", projectsPath, project, v); err != nil {
 		return nil, err
 	}
 	return v, nil
 }
 
-func (c *Client) doRequest(method string, path string, data []byte, v interface{}) error {
+// CreateBuildType creates a new build type under designated project
+func (c *Client) CreateBuildType(projectLocator string, buildType *BuildType) (*BuildType, error) {
+	v := &BuildType{}
+	p := path.Join(projectsPath, projectLocator, buildTypesPath)
+	if err := c.doJSONRequest("POST", p, buildType, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// SelectSnapshotDependency selects a snapshot dependency with given id
+func (c *Client) SelectSnapshotDependency(buildTypeSelector string, dependencyId string) (*Dependency, error) {
+	v := &Dependency{}
+	p := path.Join(buildTypesPath, buildTypeSelector, snapshotDependencyPath, dependencyId)
+	if err := c.doRequest("GET", p, "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// SelectArtifactDependency selects an artifact dependency with given id
+func (c *Client) SelectArtifactDependency(buildTypeSelector string, dependencyId string) (*Dependency, error) {
+	v := &Dependency{}
+	p := path.Join(buildTypesPath, buildTypeSelector, artifactDependencyPath, dependencyId)
+	if err := c.doRequest("GET", p, "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// CreateSnapshotDependency creates a snapshot dependency
+func (c *Client) CreateSnapshotDependency(buildTypeSelector string, dependency *Dependency) (*Dependency, error) {
+	v := &Dependency{}
+	dependency.Type = snapshotDependencyType
+	p := path.Join(buildTypesPath, buildTypeSelector, snapshotDependencyPath)
+	if err := c.doJSONRequest("POST", p, dependency, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// CreateArtifactDependency creates a artifact dependency
+func (c *Client) CreateArtifactDependency(buildTypeSelector string, dependency *Dependency) (*Dependency, error) {
+	v := &Dependency{}
+	dependency.Type = artifactDependencyType
+	p := path.Join(buildTypesPath, buildTypeSelector, artifactDependencyPath)
+	if err := c.doJSONRequest("POST", p, dependency, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// ApplyTemplate applies a build type template to specified build type
+func (c *Client) ApplyTemplate(buildTypeSelector string, templateSelector string) (*BuildType, error) {
+	v := &BuildType{}
+	p := path.Join(buildTypesPath, buildTypeSelector, templatePath)
+	if err := c.doRequest("PUT", p, "text/plain", []byte(templateSelector), v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func (c *Client) doJSONRequest(method, path string, t, v interface{}) error {
+	body, err := json.Marshal(t)
+	if err != nil {
+		return err
+	}
+	if err := c.doRequest(method, path, jsonContentType, body, v); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) doRequest(method string, path string, contentType string, data []byte, v interface{}) error {
 	url := c.host + basePathSuffix + path
 	var body io.Reader
 	if data != nil {
@@ -200,9 +282,14 @@ func (c *Client) doRequest(method string, path string, data []byte, v interface{
 	rawAuth := []byte(fmt.Sprintf("%v:%v", c.username, c.password))
 	req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString(rawAuth))
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
+	if len(contentType) > 0 {
+		req.Header.Set("Content-Type", contentType)
+	} else {
+		req.Header.Set("Content-Type", jsonContentType)
+	}
 
 	resp, err := c.httpClient.Do(req)
+
 	if err != nil {
 		return err
 	}

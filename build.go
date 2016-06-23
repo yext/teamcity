@@ -38,6 +38,13 @@ type BuildType struct {
 	Name string `json:"name,omitempty"`
 }
 
+// Dependency is a build type's artifact or snapshot dependency
+type Dependency struct {
+	Id              string    `json:"id,omitempty"`
+	Type            string    `json:"type,omitempty"`
+	SourceBuildType BuildType `json:"source-buildType,omitempty"`
+}
+
 // Comment is a description for a Build instance
 type Comment struct {
 	Text string `json:"text"`
