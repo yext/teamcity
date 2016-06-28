@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 	"sort"
@@ -13,6 +15,8 @@ import (
 
 	"github.com/yext/teamcity/locate"
 )
+
+var Logger = log.New(ioutil.Discard, "", 0)
 
 const (
 	basePathSuffix         = "/httpAuth/app/rest/"
@@ -24,6 +28,7 @@ const (
 	templatePath           = "template"
 	artifactDependencyPath = "artifact-dependencies"
 	snapshotDependencyPath = "snapshot-dependencies"
+	triggerPath            = "triggers"
 
 	locatorParamKey = "?locator="
 
@@ -247,6 +252,15 @@ func (c *Client) CreateArtifactDependency(buildTypeSelector string, dependency *
 	return v, nil
 }
 
+// CreateTrigger creates a trigger for a build type
+func (c *Client) CreateTrigger(buildTypeSelector string, trigger *Trigger) (*Trigger, error) {
+	p := path.Join(buildTypesPath, buildTypeSelector, triggerPath)
+	if err := c.doJSONRequest("POST", p, trigger, trigger); err != nil {
+		return nil, err
+	}
+	return trigger, nil
+}
+
 // ApplyTemplate applies a build type template to specified build type
 func (c *Client) ApplyTemplate(buildTypeSelector string, templateSelector string) (*BuildType, error) {
 	v := &BuildType{}
@@ -269,6 +283,7 @@ func (c *Client) doJSONRequest(method, path string, t, v interface{}) error {
 }
 
 func (c *Client) doRequest(method string, path string, contentType string, data []byte, v interface{}) error {
+	Logger.Println(method, path, "\nbody:\n", string(data))
 	url := c.host + basePathSuffix + path
 	var body io.Reader
 	if data != nil {
@@ -295,7 +310,9 @@ func (c *Client) doRequest(method string, path string, contentType string, data 
 	}
 	defer resp.Body.Close()
 	if v != nil {
-		return json.NewDecoder(resp.Body).Decode(v)
+		b, _ := ioutil.ReadAll(resp.Body)
+		Logger.Println("response:\n", string(b))
+		return json.Unmarshal(b, v)
 	}
 
 	return nil

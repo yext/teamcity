@@ -1,6 +1,7 @@
 package teamcity
 
 import (
+	"strconv"
 	"strings"
 	"time"
 )
@@ -40,9 +41,50 @@ type BuildType struct {
 
 // Dependency is a build type's artifact or snapshot dependency
 type Dependency struct {
-	Id              string    `json:"id,omitempty"`
-	Type            string    `json:"type,omitempty"`
-	SourceBuildType BuildType `json:"source-buildType,omitempty"`
+	Id              string        `json:"id,omitempty"`
+	Type            string        `json:"type,omitempty"`
+	SourceBuildType BuildType     `json:"source-buildType,omitempty"`
+	PropertyList    *PropertyList `json:"properties,omitempty"`
+}
+
+// PropertyList is a list of name-value attributes describing some entity.
+type PropertyList struct {
+	Count      int        `json:"count"`
+	Properties []Property `json:"property"`
+}
+
+func NewPropertyList(m map[string]string) *PropertyList {
+	var props []Property
+	for k, v := range m {
+		props = append(props, Property{Name: k, Value: v})
+	}
+	return &PropertyList{Count: len(props), Properties: props}
+}
+
+// Value returns the named property's value, or empty string if not found.
+func (pl *PropertyList) Value(name string) string {
+	if pl == nil {
+		return ""
+	}
+	for _, v := range pl.Properties {
+		if v.Name == name {
+			return v.Value
+		}
+	}
+	return ""
+}
+
+// Bool returns the named property's boolean value, or false if not found.
+func (pl *PropertyList) Bool(name string) bool {
+	if pl == nil {
+		return false
+	}
+	var val = pl.Value(name)
+	b, err := strconv.ParseBool(val)
+	if err != nil {
+		return false
+	}
+	return b
 }
 
 // Comment is a description for a Build instance
