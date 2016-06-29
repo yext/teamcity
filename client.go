@@ -172,8 +172,8 @@ func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription 
 }
 
 // UpdateParameter updates the parameter provided for the specified project name
-func (c *Client) UpdateParameter(projectName string, property *Property) (*Property, error) {
-	p := path.Join(projectsPath, locate.ByName(projectName).String(), parametersPath, property.Name)
+func (c *Client) UpdateParameter(projectLocator string, property *Property) (*Property, error) {
+	p := path.Join(projectsPath, projectLocator, parametersPath, property.Name)
 	v := &Property{}
 	if err := c.doJSONRequest("PUT", p, property, v); err != nil {
 		return nil, err
