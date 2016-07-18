@@ -119,7 +119,7 @@ func (client *Client) SelectChangesFromBuilds(builds *Builds) ([]Change, error) 
 	return changesList, nil
 }
 
-//SelectChange gets the Change with the specified selector
+// SelectChange gets the Change with the specified selector
 func (c *Client) SelectChange(selector string) (*Change, error) {
 	v := &Change{}
 	if err := c.doRequest("GET", path.Join(changesPath, selector), "", nil, v); err != nil {
