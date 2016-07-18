@@ -23,7 +23,17 @@ func ByName(name string) Locator {
 	return Locator{"name", name}
 }
 
+// ByVersion gets the Locator for locating a Change by version
+func ByVersion(version string) Locator {
+	return Locator{"version", version}
+}
+
 // ByBuildType gets the Locator for locating by build type locator
 func ByBuildType(l Locator) Locator {
 	return Locator{"buildType", fmt.Sprintf("(%v)", l.String())}
+}
+
+// ByAffectedProject gets the Locator for locating by affected project locator
+func ByAffectedProject(l Locator) Locator {
+	return Locator{"affectedProject", fmt.Sprintf("(%v)", l.String())}
 }

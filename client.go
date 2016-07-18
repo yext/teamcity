@@ -24,6 +24,7 @@ const (
 	buildsPath             = "builds"
 	buildTypesPath         = "buildTypes"
 	buildQueuePath         = "buildQueue"
+	changesPath            = "changes"
 	parametersPath         = "parameters"
 	templatePath           = "template"
 	artifactDependencyPath = "artifact-dependencies"
@@ -118,10 +119,29 @@ func (client *Client) SelectChangesFromBuilds(builds *Builds) ([]Change, error) 
 	return changesList, nil
 }
 
+//SelectChange gets the Change with the specified selector
+func (c *Client) SelectChange(selector string) (*Change, error) {
+	v := &Change{}
+	if err := c.doRequest("GET", path.Join(changesPath, selector), "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
 // SelectBuildType gets the build configuration with the specified selector
 func (c *Client) SelectBuildType(selector string) (*BuildType, error) {
 	v := &BuildType{}
 	if err := c.doRequest("GET", path.Join(buildTypesPath, selector), "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// SelectBuildTypes gets the build configurations with the specified selector
+func (c *Client) SelectBuildTypes(selector string) (*BuildTypes, error) {
+	v := &BuildTypes{}
+	path := buildTypesPath + locatorParamKey + selector
+	if err := c.doRequest("GET", path, "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -164,7 +184,6 @@ func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription 
 			Text: pushDescription,
 		}
 	}
-
 	if err := c.doJSONRequest("POST", buildQueuePath, build, v); err != nil {
 		return nil, err
 	}

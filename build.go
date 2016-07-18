@@ -29,6 +29,7 @@ type Build struct {
 	StartDate   Time        `json:"startDate,omitempty"`
 	FinishDate  Time        `json:"finishDate,omitempty"`
 	LastChanges LastChanges `json:"lastChanges,omitempty"`
+	Triggered   Triggered   `json:"triggered,omitempty"`
 	Comment     Comment     `json:"comment,omitempty"`
 	Properties  Params      `json:"properties,omitempty"`
 }
@@ -37,6 +38,11 @@ type Build struct {
 type BuildType struct {
 	Id   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+// BuildTypes is a container for a list of BuildType's
+type BuildTypes struct {
+	BuildTypes []BuildType `json:"buildType,omitempty"`
 }
 
 // Dependency is a build type's artifact or snapshot dependency
@@ -103,6 +109,7 @@ type Change struct {
 	Version  string `json:"version,omitempty"`
 	Username string `json:"username,omitempty"`
 	Date     Time   `json:"date,omitempty"`
+	Comment  string `json:"comment,omitempty"`
 }
 
 // ChangesByDate is an interface for sorting an array of Changes by Date
@@ -115,6 +122,17 @@ func (c ChangesByDate) Less(i, j int) bool {
 	timeA := time.Time(c[i].Date)
 	timeB := time.Time(c[j].Date)
 	return timeA.Before(timeB)
+}
+
+// Triggered describes what triggered a particular build
+type Triggered struct {
+	Date Time `json:"date,omitempty"`
+	User User `json:"user,omitempty"`
+}
+
+// User describes a user on TeamCity
+type User struct {
+	Username string `json:"username,omitempty"`
 }
 
 // Time is the date in the format TeamCity provides
