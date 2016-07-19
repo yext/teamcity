@@ -37,3 +37,27 @@ func ByBuildType(l Locator) Locator {
 func ByAffectedProject(l Locator) Locator {
 	return Locator{"affectedProject", fmt.Sprintf("(%v)", l.String())}
 }
+
+// ByProject gets the Locator for locating by project locator
+func ByProject(l Locator) Locator {
+	return Locator{"project", fmt.Sprintf("(%v)", l.String())}
+}
+
+// BySnapshotDependency gets the Locator for locating by to locator
+func BySnapshotDependency(locators ...Locator) Locator {
+	var v string
+	for _, l := range locators {
+		v += l.String() + ","
+	}
+	return Locator{"snapshotDependency", fmt.Sprintf("(%v)", v[:len(v)-1])}
+}
+
+// ByIncludeInitial gets the Locator for locating by includeInitial (used with BySnapshotDependency)
+func ByIncludeInitial(b bool) Locator {
+	return Locator{"includeInitial", fmt.Sprintf("%v", b)}
+}
+
+// ByTo gets the Locator for locating by to locator (used with BySnapshotDependency)
+func ByTo(l Locator) Locator {
+	return Locator{"to", fmt.Sprintf("(%v)", l.String())}
+}

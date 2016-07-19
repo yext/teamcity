@@ -17,21 +17,22 @@ type Builds struct {
 
 // Build is an instance of a stage in the build chain for a given project
 type Build struct {
-	Id          int         `json:"id,omitempty"`
-	Number      string      `json:"number,omitempty"`
-	BuildTypeId string      `json:"buildTypeId,omitempty"`
-	BuildType   BuildType   `json:"buildType,omitempty"`
-	Status      string      `json:"status,omitempty"`
-	State       string      `json:"state,omitempty"`
-	Href        string      `json:"href,omitempty"`
-	StatusText  string      `json:"statusText,omitempty"`
-	QueuedDate  Time        `json:"queuedDate,omitempty"`
-	StartDate   Time        `json:"startDate,omitempty"`
-	FinishDate  Time        `json:"finishDate,omitempty"`
-	LastChanges LastChanges `json:"lastChanges,omitempty"`
-	Triggered   Triggered   `json:"triggered,omitempty"`
-	Comment     Comment     `json:"comment,omitempty"`
-	Properties  Params      `json:"properties,omitempty"`
+	Id          int       `json:"id,omitempty"`
+	Number      string    `json:"number,omitempty"`
+	BuildTypeId string    `json:"buildTypeId,omitempty"`
+	BuildType   BuildType `json:"buildType,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	State       string    `json:"state,omitempty"`
+	Href        string    `json:"href,omitempty"`
+	StatusText  string    `json:"statusText,omitempty"`
+	QueuedDate  Time      `json:"queuedDate,omitempty"`
+	StartDate   Time      `json:"startDate,omitempty"`
+	FinishDate  Time      `json:"finishDate,omitempty"`
+	Changes     Changes   `json:"changes,omitempty"`
+	LastChanges Changes   `json:"lastChanges,omitempty"`
+	Triggered   Triggered `json:"triggered,omitempty"`
+	Comment     Comment   `json:"comment,omitempty"`
+	Properties  Params    `json:"properties,omitempty"`
 }
 
 // BuildType is a type of Build
@@ -99,9 +100,21 @@ type Comment struct {
 	Text string `json:"text"`
 }
 
-// LastChanges are the list of changes that corresponds to a certain build
-type LastChanges struct {
+// Changes are the list of changes that corresponds to a certain build
+type Changes struct {
 	Changes []Change `json:"change"`
+}
+
+// GetChange returns the most relevant Change describing the build, prioritizing
+// Build.Changes over Build.LastChanges out of preference for changes to non-TeamCity repos
+func (b *Build) GetChange() Change {
+	if len(b.Changes.Changes) > 0 {
+		return b.Changes.Changes[0]
+	}
+	if len(b.LastChanges.Changes) > 0 {
+		return b.LastChanges.Changes[0]
+	}
+	return Change{}
 }
 
 // Change is an individual change in a group that corresponds to a certain build
@@ -113,15 +126,15 @@ type Change struct {
 	Comment  string `json:"comment,omitempty"`
 }
 
-// ChangesByDate is an interface for sorting an array of Changes by Date
-type ChangesByDate []Change
+// BuildsByDate is an interface for sorting a Build array by Date
+type BuildsByDate []Build
 
 // Functions for using Golang "sort" package
-func (c ChangesByDate) Len() int      { return len(c) }
-func (c ChangesByDate) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
-func (c ChangesByDate) Less(i, j int) bool {
-	timeA := time.Time(c[i].Date)
-	timeB := time.Time(c[j].Date)
+func (c BuildsByDate) Len() int      { return len(c) }
+func (c BuildsByDate) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
+func (c BuildsByDate) Less(i, j int) bool {
+	timeA := time.Time(c[i].Triggered.Date)
+	timeB := time.Time(c[j].Triggered.Date)
 	return timeA.Before(timeB)
 }
 

@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"path"
-	"sort"
 	"strconv"
 
 	"github.com/yext/teamcity/locate"
@@ -99,26 +98,6 @@ func (c *Client) BuildFromID(id int) (*Build, error) {
 	return v, nil
 }
 
-// Compiles a list of the changes characterizing each of the given builds, with no repeats, sorted by Date
-func (client *Client) SelectChangesFromBuilds(builds *Builds) ([]Change, error) {
-	changesMap := map[string]Change{}
-	for _, build := range builds.Builds {
-		detailedBuild, err := client.BuildFromID(build.Id)
-		if err != nil {
-			return nil, err
-		}
-		for _, change := range detailedBuild.LastChanges.Changes {
-			changesMap[change.Version] = change
-		}
-	}
-	var changesList ChangesByDate
-	for _, change := range changesMap {
-		changesList = append(changesList, change)
-	}
-	sort.Sort(sort.Reverse(changesList))
-	return changesList, nil
-}
-
 // SelectChange gets the Change with the specified selector
 func (c *Client) SelectChange(selector string) (*Change, error) {
 	v := &Change{}
@@ -177,7 +156,7 @@ func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription 
 		},
 	}
 	if changeId > 0 {
-		build.LastChanges = LastChanges{
+		build.LastChanges = Changes{
 			Changes: []Change{
 				Change{Id: changeId},
 			},
