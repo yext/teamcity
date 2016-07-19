@@ -169,6 +169,10 @@ func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription 
 					Name:  "env.PUSH_DESCRIPTION",
 					Value: pushDescription,
 				},
+				Property{
+					Name:  "reverse.dep.*.env.PUSH_DESCRIPTION",
+					Value: pushDescription,
+				},
 			},
 		},
 	}
