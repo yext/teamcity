@@ -36,8 +36,9 @@ type Build struct {
 
 // BuildType is a type of Build
 type BuildType struct {
-	Id   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	Id                   string               `json:"id,omitempty"`
+	Name                 string               `json:"name,omitempty"`
+	SnapshotDependencies SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
 }
 
 // BuildTypes is a container for a list of BuildType's
@@ -122,6 +123,16 @@ func (c ChangesByDate) Less(i, j int) bool {
 	timeA := time.Time(c[i].Date)
 	timeB := time.Time(c[j].Date)
 	return timeA.Before(timeB)
+}
+
+// SnapshotDependencies is a container for SnapshotDependency's
+type SnapshotDependencies struct {
+	SnapshotDependencies []SnapshotDependency `json:"snapshot-dependency,omitempty"`
+}
+
+// SnapshotDependency relates a build type to its source build type
+type SnapshotDependency struct {
+	SourceBuildType BuildType `json:"source-buildType,omitempty"`
 }
 
 // Triggered describes what triggered a particular build
