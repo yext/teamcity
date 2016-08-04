@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -314,7 +315,10 @@ func (c *Client) doRequest(method string, path string, contentType string, data 
 	if v != nil {
 		b, _ := ioutil.ReadAll(resp.Body)
 		Logger.Println("response:\n", string(b))
-		return json.Unmarshal(b, v)
+		if json.Unmarshal(b, v) != nil {
+			return errors.New(string(b))
+		}
+		return nil
 	}
 
 	return nil
