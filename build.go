@@ -37,9 +37,9 @@ type Build struct {
 
 // BuildType is a type of Build
 type BuildType struct {
-	Id                   string               `json:"id,omitempty"`
-	Name                 string               `json:"name,omitempty"`
-	SnapshotDependencies SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
+	Id                   string                `json:"id,omitempty"`
+	Name                 string                `json:"name,omitempty"`
+	SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
 }
 
 // BuildTypes is a container for a list of BuildType's
