@@ -2,11 +2,12 @@ package teamcity
 
 // Project is an individual project configured in TeamCity
 type Project struct {
-	Id            string   `json:"id,omitempty"`
-	Name          string   `json:"name,omitempty"`
-	WebUrl        string   `json:"webUrl,omitempty"`
-	Params        Params   `json:"parameters,omitempty"`
-	ParentProject *Project `json:"parentProject,omitempty"`
+	Id              string   `json:"id,omitempty"`
+	Name            string   `json:"name,omitempty"`
+	WebUrl          string   `json:"webUrl,omitempty"`
+	Params          Params   `json:"parameters,omitempty"`
+	ParentProjectId string   `json:"parentProjectId,omitempty"`
+	ParentProject   *Project `json:"parentProject,omitempty"`
 }
 
 // Projects is a list of TeamCity projects and aggregate details

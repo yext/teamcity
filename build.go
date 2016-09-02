@@ -40,6 +40,7 @@ type BuildType struct {
 	Id                   string                `json:"id,omitempty"`
 	Name                 string                `json:"name,omitempty"`
 	SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
+	Project              *Project              `json:"project,omitempty"`
 }
 
 // BuildTypes is a container for a list of BuildType's
