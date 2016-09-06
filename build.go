@@ -127,6 +127,15 @@ type Change struct {
 	Comment  string `json:"comment,omitempty"`
 }
 
+// GetShortVersion returns the first 8 characters of the change version
+func (c *Change) GetShortVersion() string {
+	var v string
+	if len(c.Version) >= 8 {
+		v = c.Version[:8]
+	}
+	return v
+}
+
 // BuildsByDate is an interface for sorting a Build array by Date
 type BuildsByDate []Build
 
