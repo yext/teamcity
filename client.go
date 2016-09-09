@@ -223,10 +223,10 @@ func (c *Client) SelectSnapshotDependency(buildTypeSelector string, dependencyId
 	return v, nil
 }
 
-// SelectArtifactDependency selects an artifact dependency with given id
-func (c *Client) SelectArtifactDependency(buildTypeSelector string, dependencyId string) (*Dependency, error) {
-	v := &Dependency{}
-	p := path.Join(buildTypesPath, buildTypeSelector, artifactDependencyPath, dependencyId)
+// SelectArtifactDependencies selects all artifact dependencies for the given build type
+func (c *Client) SelectArtifactDependencies(buildTypeSelector string) (*ArtifactDependencies, error) {
+	v := &ArtifactDependencies{}
+	p := path.Join(buildTypesPath, buildTypeSelector, artifactDependencyPath)
 	if err := c.doRequest("GET", p, "", nil, v); err != nil {
 		return nil, err
 	}

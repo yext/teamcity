@@ -56,6 +56,10 @@ type Dependency struct {
 	PropertyList    *PropertyList `json:"properties,omitempty"`
 }
 
+type ArtifactDependencies struct {
+	ArtifactDependencies []Dependency `json:"artifact-dependency"`
+}
+
 // PropertyList is a list of name-value attributes describing some entity.
 type PropertyList struct {
 	Count      int        `json:"count"`
