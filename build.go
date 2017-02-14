@@ -41,6 +41,7 @@ type BuildType struct {
 	Name                 string                `json:"name,omitempty"`
 	SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
 	Project              *Project              `json:"project,omitempty"`
+	VcsRootEntries       *VcsRootEntries       `json:"vcs-root-entries"`
 }
 
 // BuildTypes is a container for a list of BuildType's
@@ -160,6 +161,24 @@ type SnapshotDependencies struct {
 // SnapshotDependency relates a build type to its source build type
 type SnapshotDependency struct {
 	SourceBuildType BuildType `json:"source-buildType,omitempty"`
+}
+
+// VcsRootEntries is a list of VcsRootEntry
+type VcsRootEntries struct {
+	VcsRootEntries []VcsRootEntry `json:"vcs-root-entry,omitempty"`
+}
+
+// VcsRootEntry is a version control system entry for a build type
+type VcsRootEntry struct {
+	Id      string  `json="id,omitempty"`
+	VcsRoot VcsRoot `json="vcs-root,omitempty"`
+}
+
+// VcsRoot is a the id, name and properties of a version control system
+type VcsRoot struct {
+	Id           string        `json="id,omitempty"`
+	Name         string        `json="name,omitempty"`
+	PropertyList *PropertyList `json:"properties,omitempty"`
 }
 
 // Triggered describes what triggered a particular build

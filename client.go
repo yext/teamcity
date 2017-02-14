@@ -30,6 +30,7 @@ const (
 	artifactDependencyPath = "artifact-dependencies"
 	snapshotDependencyPath = "snapshot-dependencies"
 	triggerPath            = "triggers"
+	vcsRootsPath           = "vcs-roots"
 
 	locatorParamKey = "?locator="
 
@@ -131,6 +132,15 @@ func (c *Client) SelectBuildTypes(selector string) (*BuildTypes, error) {
 func (c *Client) SelectBuildTypeBuilds(selector string) (*Builds, error) {
 	v := &Builds{}
 	if err := c.doRequest("GET", path.Join(buildTypesPath, selector, buildsPath), "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// SelectVcsRoot gets the VcsRoot belonging to properties specified by the specified selector
+func (c *Client) SelectVcsRoot(selector string) (*VcsRoot, error) {
+	v := &VcsRoot{}
+	if err := c.doRequest("GET", path.Join(vcsRootsPath, selector), "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
