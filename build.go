@@ -33,6 +33,7 @@ type Build struct {
 	Triggered   Triggered `json:"triggered,omitempty"`
 	Comment     Comment   `json:"comment,omitempty"`
 	Properties  Params    `json:"properties,omitempty"`
+	WebUrl      string    `json:"webUrl,omitempty"`
 }
 
 // BuildType is a type of Build
