@@ -31,6 +31,7 @@ const (
 	snapshotDependencyPath = "snapshot-dependencies"
 	triggerPath            = "triggers"
 	vcsRootsPath           = "vcs-roots"
+	tagsPath               = "tags"
 
 	locatorParamKey = "?locator="
 
@@ -282,6 +283,23 @@ func (c *Client) ApplyTemplate(buildTypeSelector string, templateSelector string
 		return nil, err
 	}
 	return v, nil
+}
+
+func (c *Client) GetTagByLocator(locator string) (*Tags, error) {
+	v := &Tags{}
+	p := path.Join(buildsPath, locator, tagsPath)
+	if err := c.doJSONRequest("GET", p, nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func (c *Client) SetTagByLocator(locator string, tags *Tags) (*Tags, error) {
+	p := path.Join(buildsPath, locator, tagsPath)
+	if err := c.doJSONRequest("PUT", p, tags, tags); err != nil {
+		return nil, err
+	}
+	return tags, nil
 }
 
 func (c *Client) doJSONRequest(method, path string, t, v interface{}) error {

@@ -171,15 +171,31 @@ type VcsRootEntries struct {
 
 // VcsRootEntry is a version control system entry for a build type
 type VcsRootEntry struct {
-	Id      string  `json="id,omitempty"`
-	VcsRoot VcsRoot `json="vcs-root,omitempty"`
+	Id      string  `json:"id,omitempty"`
+	VcsRoot VcsRoot `json:"vcs-root,omitempty"`
 }
 
 // VcsRoot is a the id, name and properties of a version control system
 type VcsRoot struct {
-	Id           string        `json="id,omitempty"`
-	Name         string        `json="name,omitempty"`
+	Id           string        `json:"id,omitempty"`
+	Name         string        `json:"name,omitempty"`
 	PropertyList *PropertyList `json:"properties,omitempty"`
+}
+
+type Tag struct {
+	Name string `json:"name,omitempty"`
+}
+
+type Tags struct {
+	Tags []Tag `json:"tag,omitempty"`
+}
+
+func NewTags(t []string) *Tags {
+	tags := []Tag{}
+	for _, tag := range t {
+		tags = append(tags, Tag{Name: tag})
+	}
+	return &Tags{Tags: tags}
 }
 
 // Triggered describes what triggered a particular build
