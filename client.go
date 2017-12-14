@@ -147,8 +147,8 @@ func (c *Client) SelectVcsRoot(selector string) (*VcsRoot, error) {
 	return v, nil
 }
 
-// TriggerBuild runs a build for the given build configuration in TeamCity
-func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription string) (*Build, error) {
+// TriggerBuildID runs a build for the given build ID and change ID in TeamCity
+func (c *Client) TriggerBuildID(buildTypeId string, changeId int, pushDescription string) (*Build, error) {
 	v := &Build{}
 	build := &Build{
 		BuildType: BuildType{
@@ -183,6 +183,17 @@ func (c *Client) TriggerBuild(buildTypeId string, changeId int, pushDescription 
 		return nil, err
 	}
 	return v, nil
+}
+
+// TriggerBuild runs a build using the given provided *Build.
+func (c *Client) TriggerBuild(build *Build, pushDescription string) (*Build, error) {
+	if len(pushDescription) > 0 {
+		build.Comment = Comment{Text: pushDescription}
+	}
+	if err := c.doJSONRequest("POST", buildQueuePath, build, build); err != nil {
+		return nil, err
+	}
+	return build, nil
 }
 
 // UpdateParameter updates the parameter provided for the specified project name
