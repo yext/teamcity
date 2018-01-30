@@ -27,6 +27,7 @@ const (
 	changesPath            = "changes"
 	parametersPath         = "parameters"
 	templatePath           = "template"
+	statsPath              = "statistics"
 	artifactDependencyPath = "artifact-dependencies"
 	snapshotDependencyPath = "snapshot-dependencies"
 	triggerPath            = "triggers"
@@ -133,6 +134,14 @@ func (c *Client) SelectBuildTypes(selector string) (*BuildTypes, error) {
 func (c *Client) SelectBuildTypeBuilds(selector string) (*Builds, error) {
 	v := &Builds{}
 	if err := c.doRequest("GET", path.Join(buildTypesPath, selector, buildsPath), "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func (c *Client) SelectBuildStats(selector string) (*PropertyList, error) {
+	v := &PropertyList{}
+	if err := c.doRequest("GET", path.Join(buildsPath, selector, statsPath), "", nil, v); err != nil {
 		return nil, err
 	}
 	return v, nil
