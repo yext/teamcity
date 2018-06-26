@@ -12,28 +12,31 @@ const (
 
 // Builds is a list of builds
 type Builds struct {
-	Builds []Build `json:"build"`
+	Count    int     `json:"count,omitempty"`
+	NextHref string  `json:"nextHref,omitempty"`
+	Builds   []Build `json:"build"`
 }
 
 // Build is an instance of a stage in the build chain for a given project
 type Build struct {
-	Id          int       `json:"id,omitempty"`
-	Number      string    `json:"number,omitempty"`
-	BuildTypeId string    `json:"buildTypeId,omitempty"`
-	BuildType   BuildType `json:"buildType,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	State       string    `json:"state,omitempty"`
-	Href        string    `json:"href,omitempty"`
-	StatusText  string    `json:"statusText,omitempty"`
-	QueuedDate  Time      `json:"queuedDate,omitempty"`
-	StartDate   Time      `json:"startDate,omitempty"`
-	FinishDate  Time      `json:"finishDate,omitempty"`
-	Changes     Changes   `json:"changes,omitempty"`
-	LastChanges Changes   `json:"lastChanges,omitempty"`
-	Triggered   Triggered `json:"triggered,omitempty"`
-	Comment     Comment   `json:"comment,omitempty"`
-	Properties  Params    `json:"properties,omitempty"`
-	WebUrl      string    `json:"webUrl,omitempty"`
+	Id              int             `json:"id,omitempty"`
+	Number          string          `json:"number,omitempty"`
+	BuildTypeId     string          `json:"buildTypeId,omitempty"`
+	BuildType       BuildType       `json:"buildType,omitempty"`
+	Status          string          `json:"status,omitempty"`
+	State           string          `json:"state,omitempty"`
+	Href            string          `json:"href,omitempty"`
+	StatusText      string          `json:"statusText,omitempty"`
+	QueuedDate      Time            `json:"queuedDate,omitempty"`
+	StartDate       Time            `json:"startDate,omitempty"`
+	FinishDate      Time            `json:"finishDate,omitempty"`
+	Changes         Changes         `json:"changes,omitempty"`
+	LastChanges     Changes         `json:"lastChanges,omitempty"`
+	Triggered       Triggered       `json:"triggered,omitempty"`
+	Comment         Comment         `json:"comment,omitempty"`
+	Properties      Params          `json:"properties,omitempty"`
+	WebUrl          string          `json:"webUrl,omitempty"`
+	BuildStatistics BuildStatistics `json:"statistics,omitempty"`
 }
 
 // BuildType is a type of Build
@@ -43,6 +46,7 @@ type BuildType struct {
 	SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
 	Project              *Project              `json:"project,omitempty"`
 	VcsRootEntries       *VcsRootEntries       `json:"vcs-root-entries"`
+	Template             *BuildType            `json:"template,omitempty"`
 }
 
 // BuildTypes is a container for a list of BuildType's
@@ -180,6 +184,16 @@ type VcsRoot struct {
 	Id           string        `json:"id,omitempty"`
 	Name         string        `json:"name,omitempty"`
 	PropertyList *PropertyList `json:"properties,omitempty"`
+}
+
+type BuildStatistics struct {
+	StatisticsEntries []StatisticsEntry `json:"property,omitempty"`
+}
+
+// StatisticsEntry gives a name-value pair of a statistic
+type StatisticsEntry struct {
+	Name  string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 type Tag struct {
