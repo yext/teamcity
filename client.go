@@ -264,6 +264,26 @@ func (c *Client) SelectArtifactDependencies(buildTypeSelector string) (*Artifact
 	return v, nil
 }
 
+// SelectSnapshotDependencies selects all snapshot dependencies for the given build type
+func (c *Client) SelectSnapshotDependencies(buildTypeSelector string) (*SnapshotDependencies, error) {
+	v := &SnapshotDependencies{}
+	p := path.Join(buildTypesPath, buildTypeSelector, snapshotDependencyPath)
+	if err := c.doRequest("GET", p, "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// DeleteSnapshotDependency deletes a snapshot dependency
+func (c *Client) DeleteSnapshotDependency(buildTypeSelector string, dependency *Dependency) (error) {
+	dependency.Type = snapshotDependencyType
+	p := path.Join(buildTypesPath, buildTypeSelector, snapshotDependencyPath, dependency.Id)
+	if err := c.doJSONRequest("DELETE", p, nil, nil); err != nil {
+		return err
+	}
+	return nil
+}
+
 // CreateSnapshotDependency creates a snapshot dependency
 func (c *Client) CreateSnapshotDependency(buildTypeSelector string, dependency *Dependency) (*Dependency, error) {
 	v := &Dependency{}
