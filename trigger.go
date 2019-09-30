@@ -18,6 +18,10 @@ type jsonTrigger struct {
 	PropertyList *PropertyList `json:"properties,omitempty"`
 }
 
+type Triggers struct {
+	Triggers []jsonTrigger `json:"trigger,omitempty"`
+}
+
 func (t *Trigger) UnmarshalJSON(data []byte) error {
 	var jt jsonTrigger
 	e := json.Unmarshal(data, &jt)

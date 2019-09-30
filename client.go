@@ -315,6 +315,16 @@ func (c *Client) CreateTrigger(buildTypeSelector string, trigger *Trigger) (*Tri
 	return trigger, nil
 }
 
+//SelectTriggers selects all triggers for the given build type
+func (c *Client) SelectTriggers(buildTypeSelector string) (*Triggers, error) {
+	v := &Triggers{}
+	p := path.Join(buildTypesPath, buildTypeSelector, triggerPath)
+	if err := c.doRequest("GET", p, "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
 // ApplyTemplate applies a build type template to specified build type
 func (c *Client) ApplyTemplate(buildTypeSelector string, templateSelector string) (*BuildType, error) {
 	v := &BuildType{}
