@@ -27,12 +27,17 @@ type Property struct {
 	Own   bool   `json:"own,omitempty"`
 }
 
-// getProperty returns the Property of the given project with the given target name if it exists
-func (project Project) PropertyFromName(target string) Property {
-	for _, property := range project.Params.Properties {
+// PropertyFromName returns the Property of the given Params with the given target name if it exists
+func (params Params) PropertyFromName(target string) Property {
+	for _, property := range params.Properties {
 		if property.Name == target {
 			return property
 		}
 	}
 	return Property{}
+}
+
+// PropertyFromName returns the Property of the given Project with the given target name if it exists
+func (project Project) PropertyFromName(target string) Property {
+	return project.Params.PropertyFromName(target)
 }
