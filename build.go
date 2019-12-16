@@ -47,6 +47,7 @@ type BuildType struct {
 	Project              *Project              `json:"project,omitempty"`
 	VcsRootEntries       *VcsRootEntries       `json:"vcs-root-entries"`
 	Template             *BuildType            `json:"template,omitempty"`
+	Properties           Params                `json:"properties,omitempty"`
 }
 
 // BuildTypes is a container for a list of BuildType's
