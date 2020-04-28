@@ -369,6 +369,38 @@ func (c *Client) SetTagByLocator(locator string, tags *Tags) (*Tags, error) {
 	return tags, nil
 }
 
+// CancelBuildRequest is a body content of a CancelBuild request.
+type CancelBuildRequest struct {
+	Comment         string `json:"comment,omitempty"`
+	ReturnIntoQueue bool   `json:"readdIntoQueue"`
+}
+
+// CancelQueuedBuild cancels a queued build.
+func (c *Client) CancelQueuedBuild(locator string, req *CancelBuildRequest) (*Build, error) {
+	v := &Build{}
+	path := path.Join(buildQueuePath, url.PathEscape(locator))
+	in := struct {
+		req *CancelBuildRequest `json:"buildCancelRequest"`
+	}{req}
+	if err := c.doJSONRequest("POST", path, in, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+// CancelBuild cancels a running build.
+func (c *Client) CancelBuild(locator string, req *CancelBuildRequest) (*Build, error) {
+	v := &Build{}
+	path := path.Join(buildsPath, url.PathEscape(locator))
+	in := struct {
+		req *CancelBuildRequest `json:"buildCancelRequest"`
+	}{req}
+	if err := c.doJSONRequest("POST", path, in, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
 func (c *Client) doJSONRequest(method, path string, t, v interface{}) error {
 	body, err := json.Marshal(t)
 	if err != nil {
