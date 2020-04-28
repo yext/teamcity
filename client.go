@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 
@@ -35,6 +36,7 @@ const (
 	tagsPath               = "tags"
 
 	locatorParamKey = "?locator="
+	fieldsParamKey  = "&fields="
 
 	artifactDependencyType = "artifact_dependency"
 	snapshotDependencyType = "snapshot_dependency"
@@ -81,12 +83,27 @@ func (c *Client) SelectProject(selector string) (*Project, error) {
 	return v, nil
 }
 
+type selectOption interface {
+	// updatePath gets old path on the input and returns amended path.
+	updatePath(path string) string
+}
+
+// WithFields is an option for SelectBuilds to query certain fields of the builds.
+type WithFields string
+
+func (f WithFields) updatePath(path string) string {
+	return path + fieldsParamKey + url.QueryEscape(string(f))
+}
+
 // SelectBuilds gets the build with the specified buildLocator.
 // See https://confluence.jetbrains.com/display/TCD9/REST+API#RESTAPI-BuildLocator
 // for more information about constructing buildLocator string.
-func (c *Client) SelectBuilds(selector string) (*Builds, error) {
+func (c *Client) SelectBuilds(selector string, options ...selectOption) (*Builds, error) {
 	v := &Builds{}
-	path := buildsPath + locatorParamKey + selector
+	path := buildsPath + locatorParamKey + url.QueryEscape(selector)
+	for _, opt := range options {
+		path = opt.updatePath(path)
+	}
 	if err := c.doRequest("GET", path, "", nil, v); err != nil {
 		return nil, err
 	}
@@ -275,7 +292,7 @@ func (c *Client) SelectSnapshotDependencies(buildTypeSelector string) (*Snapshot
 }
 
 // DeleteSnapshotDependency deletes a snapshot dependency
-func (c *Client) DeleteSnapshotDependency(buildTypeSelector string, dependency *Dependency) (error) {
+func (c *Client) DeleteSnapshotDependency(buildTypeSelector string, dependency *Dependency) error {
 	dependency.Type = snapshotDependencyType
 	p := path.Join(buildTypesPath, buildTypeSelector, snapshotDependencyPath, dependency.Id)
 	if err := c.doJSONRequest("DELETE", p, nil, nil); err != nil {
