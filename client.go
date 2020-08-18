@@ -158,22 +158,34 @@ func (c *Client) SelectVcsRoot(selector string) (*VcsRoot, error) {
 
 // TriggerBuildID runs a build for the given build ID and change ID in TeamCity
 func (c *Client) TriggerBuildID(buildTypeId string, changeId int, pushDescription string) (*Build, error) {
+	return c.TriggerBuildIDWithProperties(buildTypeId, changeId, pushDescription, map[string]string{})
+}
+
+// TriggerBuildIDWithProperties runs a build for the given build ID and change ID in TeamCity, with the specified property values
+func (c *Client) TriggerBuildIDWithProperties(buildTypeId string, changeId int, pushDescription string, props map[string]string) (*Build, error) {
 	v := &Build{}
+	properties := []Property{
+		Property{
+			Name:  "env.PUSH_DESCRIPTION",
+			Value: pushDescription,
+		},
+		Property{
+			Name:  "reverse.dep.*.env.PUSH_DESCRIPTION",
+			Value: pushDescription,
+		},
+	}
+	for name, value := range props {
+		properties = append(properties, Property{
+			Name:  name,
+			Value: value,
+		})
+	}
 	build := &Build{
 		BuildType: BuildType{
 			Id: buildTypeId,
 		},
 		Properties: Params{
-			Properties: []Property{
-				Property{
-					Name:  "env.PUSH_DESCRIPTION",
-					Value: pushDescription,
-				},
-				Property{
-					Name:  "reverse.dep.*.env.PUSH_DESCRIPTION",
-					Value: pushDescription,
-				},
-			},
+			Properties: properties,
 		},
 	}
 	if changeId > 0 {
@@ -275,7 +287,7 @@ func (c *Client) SelectSnapshotDependencies(buildTypeSelector string) (*Snapshot
 }
 
 // DeleteSnapshotDependency deletes a snapshot dependency
-func (c *Client) DeleteSnapshotDependency(buildTypeSelector string, dependency *Dependency) (error) {
+func (c *Client) DeleteSnapshotDependency(buildTypeSelector string, dependency *Dependency) error {
 	dependency.Type = snapshotDependencyType
 	p := path.Join(buildTypesPath, buildTypeSelector, snapshotDependencyPath, dependency.Id)
 	if err := c.doJSONRequest("DELETE", p, nil, nil); err != nil {
