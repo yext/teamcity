@@ -364,6 +364,33 @@ func (c *Client) SetTagByLocator(locator string, tags *Tags) (*Tags, error) {
 	return tags, nil
 }
 
+func (c *Client) DownloadBuildLog(buildId int, w io.WriteCloser) error {
+	url := c.host + fmt.Sprintf("/downloadBuildLog.html?buildId=%d", buildId)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+
+	req.SetBasicAuth(c.username, c.password)
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		return err
+	}
+	if err := resp.Body.Close(); err != nil {
+		return err
+	}
+	if err := w.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) doJSONRequest(method, path string, t, v interface{}) error {
 	body, err := json.Marshal(t)
 	if err != nil {
