@@ -15,28 +15,6 @@ type Projects struct {
 	Projects []Project `json:"project,omitempty"`
 }
 
-// Params is a container for the various properties of a project
-type Params struct {
-	Properties []Property `json:"property,omitempty"`
-}
-
-// Property is a characteristic of a project (e.g. JOB, OWNER, or SERVICE)
-type Property struct {
-	Name  string `json:"name,omitempty"`
-	Value string `json:"value"`
-	Own   bool   `json:"own,omitempty"`
-}
-
-// PropertyFromName returns the Property of the given Params with the given target name if it exists
-func (params Params) PropertyFromName(target string) Property {
-	for _, property := range params.Properties {
-		if property.Name == target {
-			return property
-		}
-	}
-	return Property{}
-}
-
 // PropertyFromName returns the Property of the given Project with the given target name if it exists
 func (project Project) PropertyFromName(target string) Property {
 	return project.Params.PropertyFromName(target)
