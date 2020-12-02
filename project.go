@@ -23,7 +23,7 @@ type Params struct {
 // Property is a characteristic of a project (e.g. JOB, OWNER, or SERVICE)
 type Property struct {
 	Name  string `json:"name,omitempty"`
-	Value string `json:"value,omitempty"`
+	Value string `json:"value"`
 	Own   bool   `json:"own,omitempty"`
 }
 
