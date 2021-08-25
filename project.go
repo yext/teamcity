@@ -8,6 +8,7 @@ type Project struct {
 	Params          Params   `json:"parameters,omitempty"`
 	ParentProjectId string   `json:"parentProjectId,omitempty"`
 	ParentProject   *Project `json:"parentProject,omitempty"`
+	Archived        bool     `json:"archived,omitempty"`
 }
 
 // Projects is a list of TeamCity projects and aggregate details
