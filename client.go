@@ -81,6 +81,17 @@ func (c *Client) SelectProject(selector string) (*Project, error) {
 	return v, nil
 }
 
+// SelectProjects gets the projects with specified selector
+// See https://confluence.jetbrains.com/display/TCD9/REST+API#RESTAPI-ProjectsandBuildConfiguration/TemplatesLists
+// for more information about constructing selector.
+func (c *Client) SelectProjects(selector string) (*Projects, error) {
+	v := &Projects{}
+	if err := c.doRequest("GET", path.Join(projectsPath, selector), "", nil, v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
 // SelectBuilds gets the build with the specified buildLocator.
 // See https://confluence.jetbrains.com/display/TCD9/REST+API#RESTAPI-BuildLocator
 // for more information about constructing buildLocator string.
